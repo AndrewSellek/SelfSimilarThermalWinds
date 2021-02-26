@@ -27,14 +27,14 @@ def read_Mach_table(tableFile, choose_k=k_def):
     try:
         all_t = table_data['t']
     except ValueError:
-        all_t= np.full_like(Mach_data, t_def)
+        all_t = np.full_like(Mach_data, t_def)
     unique_t = np.unique(all_t)
 
     # Extract temperature keys k
     try:
         all_k = table_data['T_key']
     except ValueError:
-        all_k= np.full_like(Mach_data, k_def)
+        all_k = np.array([k_def]*len(Mach_data))
     unique_k = np.unique(all_k)
 
     # Extract base angles phi_b

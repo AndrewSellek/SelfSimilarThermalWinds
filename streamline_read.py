@@ -4,6 +4,7 @@ Import Packages and Setup Python Environment
 import numpy as np
 import argparse
 import matplotlib.pyplot as plt
+from scipy.interpolate import interp1d
 
 b_def   = 1.5
 t_def   = 0.0
@@ -38,12 +39,12 @@ class Streamline(object):
             self._t = t_def
 
         try:
-            self._phi_b = header_dict['phi_b']
+            self._phi_b = header_dict['phi_b']  # degrees
         except:
             self._phi = phi_def
 
         try:
-            self._chi_b = header_dict['chi_b']
+            self._chi_b = header_dict['chi_b']  # pi
         except:
             self._chi_b = chi_def/180
 
@@ -110,11 +111,39 @@ class Streamline(object):
 
     @property
     def phi_b(self):
-        return self._phi_b
+        return self._phi_b    # degrees
 
     @property
     def chi_b(self):
-        return self._chi_b
+        return self._chi_b    # pi
+
+    # Component interpolators
+    def lookup_ux(self, x, y):
+        lookup = interp1d(self.phi, self.ux)
+        return lookup(np.arctan2(y,x))
+
+    def lookup_uy(self, x, y):
+        lookup = interp1d(self.phi, self.uy)
+        return lookup(np.arctan2(y,x))
+
+    def lookup_ur(self, phi):
+        lookup = interp1d(self.phi, self.ur)
+        return lookup(phi)
+
+    def lookup_utheta(self, phi):
+        lookup = interp1d(self.phi, self.utheta)
+        return lookup(phi)
+
+    def lookup_u(self, phi):
+        lookup = interp1d(self.phi, self.u)
+        return lookup(phi)
+
+    def lookup_rtilde(self, phi):
+        lookup = interp1d(self.phi, self.r)
+        return lookup(phi)
+
+    def lookup_rb(self, r, phi):
+        return r/self.lookup_rtilde(phi)
 
 def read_streamline(dataFile):
     # Read file
@@ -133,7 +162,12 @@ def read_streamline(dataFile):
                 try:
                     header_dict[header_split[i][0]]=float(header_split[i][1])
                 except ValueError:
-                    header_dict[header_split[i][0]]=float(header_split[i][1].split("p")[0])
+                    if header_split[i][0]=='chi_b':
+                        header_dict[header_split[i][0]]=float(header_split[i][1].split("p")[0])
+                    elif  header_split[i][0]=='t':
+                        header_dict[header_split[i][0]]=float(header_split[i][1].split("(")[0])
+                    else:
+                        continue
     except ValueError:
         # Catch old versions that don't have a header
         streamlineData = np.genfromtxt(dataFile, names=True, skip_header=0, comments='#')
