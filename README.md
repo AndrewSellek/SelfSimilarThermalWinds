@@ -72,7 +72,7 @@ Reads the tables of maximum Mach numbers produced by analytic_solution.py
 
 Returns a dictionary of values read from a file 'tableFile' containing the maximum Mach number of a range of scenarios.
 
-    search\_Mach\_table(Mach\_table, b, t, phi\_b, chi\_b)
+    search_Mach_table(Mach_table, b, t, phi_b, chi_b)
 
 Searches the table for the maximum Mach number corresponding to the parameters b, t, phi\_b, chi\_b
 

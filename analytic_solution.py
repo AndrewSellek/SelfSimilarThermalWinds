@@ -13,7 +13,7 @@ import itertools
 """""""""
 Custom Tools
 """""""""
-import table_read
+from table_read import *
 
 """""""""
 Scenario Classes
@@ -151,7 +151,7 @@ def search_up(base, cs, dy, yend, estMach, dM, adaptResolution=True):
 
     return estMach
 
-def search_down(base, cs, resolution, yend, estMach, dM, adaptResolution=True):
+def search_down(base, cs, dy, yend, estMach, dM, adaptResolution=True):
     # Refine Mach number to precision dM
     negativeWarn = True
 
@@ -174,16 +174,7 @@ def search_down(base, cs, resolution, yend, estMach, dM, adaptResolution=True):
 
 def solve_streamline(b, p, c, t, k, args, search, refine, launch_Mach=None):
     base = WindBase(b, p, c)
-    print("H")
     cs = temperatureKeys[k](t, p)
-    print("e")
-    """if k=='s':
-        cs = SphericalTemperature(t, p)
-    elif k=='c':
-        cs = CylindricalTemperature(t, p)
-    else:
-        print("Temperature structure not recognised")
-        return 0"""
 
     if search:
         # First search for M_b,max 
@@ -197,8 +188,8 @@ def solve_streamline(b, p, c, t, k, args, search, refine, launch_Mach=None):
     elif refine:
         # First refine estimate for M_b,max 
         print("Refine for", base.b, cs.t, base.phi_b, base.chi_b)
-        initMach = launch_Mach[base.b][cs.t][base.phi_deg][base.chi_b]
-        maxMach = search_down(base, cs, args.resolution, args.yend, maxMach, -0.001)
+        initMach = launch_Mach[base.b][cs.t][base.phi_deg][base.chi_b/np.pi]
+        maxMach = search_down(base, cs, args.resolution, args.yend, initMach, -0.001)
         calcMach = [maxMach]
 
     else:
@@ -254,10 +245,6 @@ def dAdy(u, du, x, y, dx, base, cs, Mach):
     # Equation 23
     Area = A(x, y, dx, base)
     invrho = Area*u
-    #if t==0:
-    #    #invrho = np.exp(Mach**2/2 * (u**2-1))
-    #    return (Mach**2 - 1/u**2) * du * invrho
-    #else:
     return invrho * ( (Mach**2/cs.cs_sq(x, y) - 1/u**2) * du + 1/u * ( -cs.t + cs.dlnCdphi(x,y) * (x - y*dx) / (x*dx + y) ) * (x*dx+y) / (x**2+y**2) )
 def d2xdy2(x, y, dx, dA, base):
     # Equation 18
