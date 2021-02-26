@@ -6,9 +6,9 @@ Consists of a base class TemperatureStructure and examples of implementations
 - Since a self-similar solution is being applied, the radial variation is always a power law of index t.
 - Each implementation must provide the angular variation C(phi) as a function of cylindrical coordinates R and z.
 - The solution is expressed relative to the base of the streamline, hence C(phi_b) must equal 1.
-- Each implementation must also provide the derivative of ln(C) with respect to phi
+- Each implementation must also provide the derivative of ln(C) with respect to phi.
 - Finally each implementation must define its "key".
-- All keys should be listed in the dictionary temperatureKeys
+- All keys should be listed in the dictionary temperatureKeys.
 """""""""
 import numpy as np
 

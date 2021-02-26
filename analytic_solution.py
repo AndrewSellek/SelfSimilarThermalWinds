@@ -65,8 +65,8 @@ def main():
     parser.add_argument("--b", "-b", type=float, nargs='+', default=[1.5], help='Density Profile Index')
     parser.add_argument("--t", "-t", type=float, nargs='+', default=[0.0], help='Temperature Profile Index')
     parser.add_argument("--k", "-k", type=str, nargs='+', default=['s'], choices=temperatureKeys.keys(), help='Temperature Key: s=spherical, c=cylindrical, {custom}')
-    parser.add_argument("--phib", "-p", type=float, nargs='+', default=[0.0],  help='Angle of the wind base (degrees) [Default: 0]')
-    parser.add_argument("--chib", "-c", type=float, nargs='+', default=[90.0], help='Angle of the wind base (degrees) [Default: 0]')
+    parser.add_argument("--phib", "-p", type=float, nargs='+', default=[0.0],  help='Inclination of the wind base (degrees) [Default: 0]')
+    parser.add_argument("--chib", "-c", type=float, nargs='+', default=[90.0], help='Angle of the wind at the base (degrees) [Default: 90]')
 
     # Initial value and outer radius of solution
     parser.add_argument("--yend", "-y", type=float, default=100, help='Largest y to integrate out [100]')
