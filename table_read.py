@@ -13,7 +13,7 @@ chi_def = 90
 def read_Mach_table(tableFile, choose_k=k_def):
     # Reads a .dat file containing the maximum launch Mach numbers for a range of wind geometries and density/temperature profiles and stores in a dictionary.
     # By default returns only for spherical temperature profiles. For cylindrical call with choose_k='c'.
-    table_data = np.genfromtxt(tableFile, names=True, skip_header=0, comments='#')
+    table_data = np.genfromtxt(tableFile, names=True, skip_header=0, comments='#', dtype=None)
     Mach_data = table_data['M_b']
 
     # Extract density slopes b
@@ -32,7 +32,7 @@ def read_Mach_table(tableFile, choose_k=k_def):
 
     # Extract temperature keys k
     try:
-        all_k = table_data['T_key']
+        all_k = np.array(table_data['T_key'], dtype=str)
     except ValueError:
         all_k = np.array([k_def]*len(Mach_data))
     unique_k = np.unique(all_k)
@@ -64,7 +64,9 @@ def read_Mach_table(tableFile, choose_k=k_def):
 
     # Populate dictionary with lowest Mach fitting those parameters
     for b, t, k, phi_b, chi_b, Mach_b in zip(all_b, all_t, all_k, all_phi, all_chi, Mach_data):
+        #print(b,t,k,phi_b,chi_b,Mach_b)
         if Mach_b < Mach_table[b][t][phi_b][chi_b] and k==choose_k:
+            #print("passes")
             # If less than existing record, replace it
             Mach_table[b][t][phi_b][chi_b] = Mach_b
 
