@@ -3,7 +3,7 @@ Author: Andrew Sellek
 Date: February 2020
 
 This package is designed to calculate the structure of self-similar thermal winds launched from discs as explored in Sellek, Clarke and Booth (in prep.).
-Such models have been shown to provide robust predictions for the structure of winds, particularly in context describing winds from protoplanetary discs.
+Such models have been shown to provide robust predictions for the structure of winds, particularly in contexts describing winds from protoplanetary discs.
 
 The package contains tools for three purposes:
 * To calculate the maximum Mach number with which the wind can launch.
