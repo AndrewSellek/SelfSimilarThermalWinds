@@ -19,7 +19,7 @@ In addition, any wind solution also depends on the Mach number at the base \( M\
 
 ## Analytic Solution (analytic\_solution.py)
 Uses the equations in the form given in Sellek et al. (in prep.) to integrate the streamline solution using a first order Euler method.
-The solver uses x to represnet the cylindrical radius R and y to represent the cylindrical coordinate z.
+The solver uses x to represent the cylindrical radius R and y to represent the cylindrical coordinate z.
 
 There are three modes of operation:
 * **\[Default\]** Calculate the streamline solution for a given set of wind parameters and given Mach number(s).
