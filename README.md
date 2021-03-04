@@ -1,6 +1,7 @@
 # Self Similar Thermal Winds
 Author: Andrew Sellek
-Date: February 2020
+
+Date: March 2021
 
 This package is designed to calculate the structure of self-similar thermal winds launched from discs as explored in Sellek, Clarke and Booth (in prep.).
 Such models have been shown to provide robust predictions for the structure of winds, particularly in contexts describing winds from protoplanetary discs.
