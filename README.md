@@ -85,7 +85,7 @@ Reads the streamline_data\*.dat files produced by analytic\_solution.py
 
 Returns a streamline object. Its attributes include the wind parameters for which it was run, the velocity and its components, an methods to return the radius/velocity at requested values of the elevation phi.
 
-Sample streamlines are given in the folder examples/streamlines
+The models used Sellek et al. (in prep.) are available as sample streamlines in the folder examples/streamlines
 
 ## Contact
 Please report any bugs or issues [on github](https://github.com/AndrewSellek/SelfSimilarThermalWinds/issues).
