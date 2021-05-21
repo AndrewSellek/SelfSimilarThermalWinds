@@ -1,9 +1,10 @@
 # Self Similar Thermal Winds
 Author: Andrew Sellek
-Date: February 2020
+
+Date: March 2021
 
 This package is designed to calculate the structure of self-similar thermal winds launched from discs as explored in Sellek, Clarke and Booth (in prep.).
-Such models have been shown to provide robust predictions for the structure of winds, particularly in context describing winds from protoplanetary discs.
+Such models have been shown to provide robust predictions for the structure of winds, particularly in contexts describing winds from protoplanetary discs.
 
 The package contains tools for three purposes:
 * To calculate the maximum Mach number with which the wind can launch.
@@ -19,7 +20,7 @@ In addition, any wind solution also depends on the Mach number at the base \( M\
 
 ## Analytic Solution (analytic\_solution.py)
 Uses the equations in the form given in Sellek et al. (in prep.) to integrate the streamline solution using a first order Euler method.
-The solver uses x to represnet the cylindrical radius R and y to represent the cylindrical coordinate z.
+The solver uses x to represent the cylindrical radius R and y to represent the cylindrical coordinate z.
 
 There are three modes of operation:
 * **\[Default\]** Calculate the streamline solution for a given set of wind parameters and given Mach number(s).
@@ -85,7 +86,7 @@ Reads the streamline_data\*.dat files produced by analytic\_solution.py
 
 Returns a streamline object. Its attributes include the wind parameters for which it was run, the velocity and its components, an methods to return the radius/velocity at requested values of the elevation phi.
 
-Sample streamlines are given in the folder examples/streamlines
+The models used Sellek et al. (in prep.) are available as sample streamlines in the folder examples/streamlines
 
 ## Contact
 Please report any bugs or issues [on github](https://github.com/AndrewSellek/SelfSimilarThermalWinds/issues).
