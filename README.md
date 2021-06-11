@@ -1,9 +1,9 @@
 # Self Similar Thermal Winds
 Author: Andrew Sellek
 
-Date: March 2021
+Date: June 2021
 
-This package is designed to calculate the structure of self-similar thermal winds launched from discs as explored in Sellek, Clarke and Booth (in prep.).
+This package is designed to calculate the structure of self-similar thermal winds launched from discs as explored in [Sellek, Clarke and Booth (2021)](https://t.co/vKEtUrBQeR?amp=1).
 Such models have been shown to provide robust predictions for the structure of winds, particularly in contexts describing winds from protoplanetary discs.
 
 The package contains tools for three purposes:
@@ -19,7 +19,7 @@ The scenarios are described, primarily, by four parameters:
 In addition, any wind solution also depends on the Mach number at the base \( M\_b \)
 
 ## Analytic Solution (analytic\_solution.py)
-Uses the equations in the form given in Sellek et al. (in prep.) to integrate the streamline solution using a first order Euler method.
+Uses the equations in the form given in [Sellek, Clarke and Booth (2021)](https://t.co/vKEtUrBQeR?amp=1) to integrate the streamline solution using a first order Euler method.
 The solver uses x to represent the cylindrical radius R and y to represent the cylindrical coordinate z.
 
 There are three modes of operation:
@@ -77,7 +77,7 @@ Returns a dictionary of values read from a file 'tableFile' containing the maxim
 
 Searches the table for the maximum Mach number corresponding to the parameters b, t, phi\_b, chi\_b
 
-A sample table of values, containing all those used to make make Figure 1 of Sellek et al. (in prep.) is given in examples/launch\_Mach.dat
+A sample table of values, containing all those used to make make Figure 1 of [Sellek, Clarke and Booth (2021)](https://t.co/vKEtUrBQeR?amp=1) is given in examples/launch\_Mach.dat
 
 ## Streamline Reader (streamline\_read.py)
 Reads the streamline_data\*.dat files produced by analytic\_solution.py
@@ -86,7 +86,7 @@ Reads the streamline_data\*.dat files produced by analytic\_solution.py
 
 Returns a streamline object. Its attributes include the wind parameters for which it was run, the velocity and its components, an methods to return the radius/velocity at requested values of the elevation phi.
 
-The models used Sellek et al. (in prep.) are available as sample streamlines in the folder examples/streamlines
+The models used [Sellek, Clarke and Booth (2021)](https://t.co/vKEtUrBQeR?amp=1) are available as sample streamlines in the folder examples/streamlines
 
 ## Contact
 Please report any bugs or issues [on github](https://github.com/AndrewSellek/SelfSimilarThermalWinds/issues).
