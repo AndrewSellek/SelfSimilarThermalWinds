@@ -90,4 +90,4 @@ The models used [Sellek, Clarke and Booth (2021)](https://t.co/vKEtUrBQeR?amp=1)
 
 ## Contact
 Please report any bugs or issues [on github](https://github.com/AndrewSellek/SelfSimilarThermalWinds/issues).
-If you have any other queries feel free to [email me at ads79@cam.ac.uk](mailto:ads79@cam.ac.uk)
+If you have any other queries feel free to [email me at sellek@strw.leidenuniv.nl](mailto:sellek@strw.leidenuniv.nl)
