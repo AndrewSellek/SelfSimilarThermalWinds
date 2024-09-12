@@ -5,6 +5,7 @@ import numpy as np
 import argparse
 import matplotlib.pyplot as plt
 from scipy.interpolate import interp1d
+from scipy.integrate import cumtrapz
 
 b_def   = 1.5
 t_def   = 0.0
@@ -17,7 +18,7 @@ Define Streamline object class
 class Streamline(object):
 
     # Initialise
-    def __init__(self, streamlineData, header_dict):
+    def __init__(self, streamlineData, header_dict, dataFile):
         self._x = streamlineData['x']
         self._y = streamlineData['y']
         self._u = streamlineData['u']
@@ -47,6 +48,11 @@ class Streamline(object):
             self._chi_b = header_dict['chi_b']  # pi
         except:
             self._chi_b = chi_def/180
+
+        self._dataFile = dataFile
+
+        self._path = cumtrapz(np.sin(self.theta),self.y,initial=0)
+        self._flow_time = cumtrapz(np.sin(self.theta)/self.u,self.y,initial=0)
 
     # Spatial coordinates
     @property
@@ -117,33 +123,42 @@ class Streamline(object):
     def chi_b(self):
         return self._chi_b    # pi
 
+    @property
+    def flow_time(self):
+        return self._flow_time
+
     # Component interpolators
     def lookup_ux(self, x, y):
-        lookup = interp1d(self.phi, self.ux)
+        lookup = interp1d(self.phi, self.ux, bounds_error=False)
         return lookup(np.arctan2(y,x))
 
     def lookup_uy(self, x, y):
-        lookup = interp1d(self.phi, self.uy)
+        lookup = interp1d(self.phi, self.uy, bounds_error=False)
         return lookup(np.arctan2(y,x))
 
     def lookup_ur(self, phi):
-        lookup = interp1d(self.phi, self.ur)
+        lookup = interp1d(self.phi, self.ur, bounds_error=False)
         return lookup(phi)
 
     def lookup_utheta(self, phi):
-        lookup = interp1d(self.phi, self.utheta)
+        lookup = interp1d(self.phi, self.utheta, bounds_error=False)
         return lookup(phi)
 
     def lookup_u(self, phi):
-        lookup = interp1d(self.phi, self.u)
+        lookup = interp1d(self.phi, self.u, bounds_error=False)
         return lookup(phi)
 
     def lookup_rtilde(self, phi):
-        lookup = interp1d(self.phi, self.r)
+        lookup = interp1d(self.phi, self.r, bounds_error=False)
         return lookup(phi)
 
     def lookup_rb(self, r, phi):
         return r/self.lookup_rtilde(phi)
+
+    # Datafile
+    @property
+    def dataFile(self):
+        return self._dataFile
 
 def read_streamline(dataFile):
     # Read file
@@ -178,7 +193,7 @@ def read_streamline(dataFile):
         return None
 
     # Store as streamline object
-    stream = Streamline(streamlineData, header_dict)
+    stream = Streamline(streamlineData, header_dict, dataFile)
 
     return stream
 
