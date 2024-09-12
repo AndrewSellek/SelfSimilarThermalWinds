@@ -101,7 +101,9 @@ def main():
             filehandle.write("b\tT_key\tt\tphi_b\tchi_b/pi\tM_b\tdy\ty_end\n")
         filehandle.close()
     if refine:
-        launch_Mach = read_Mach_table(saveFile)
+        if len(args.k)>1:
+            raise Exception("Table read cannot deal with temperature key range")
+        launch_Mach = read_Mach_table(saveFile, choose_k=args.k[0])
     else:
         launch_Mach = None
 
