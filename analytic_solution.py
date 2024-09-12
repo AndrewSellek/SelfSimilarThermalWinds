@@ -190,7 +190,7 @@ def solve_streamline(b, p, c, t, k, args, search, refine, launch_Mach=None):
     elif refine:
         # First refine estimate for M_b,max 
         print("Refine for", base.b, cs.t, base.phi_b, base.chi_b)
-        initMach = launch_Mach[base.b][cs.t][base.phi_deg][base.chi_b/np.pi]
+        initMach = launch_Mach[base.b][cs.t][base.phi_deg][float('{:.3f}'.format(base.chi_b/np.pi))]
         maxMach = search_down(base, cs, args.resolution, args.yend, initMach, -0.001)
         calcMach = [maxMach]
 
