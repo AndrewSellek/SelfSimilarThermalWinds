@@ -3,7 +3,10 @@ Import Packages and Setup Python Environment
 """""""""
 import numpy as np
 import argparse
+import itertools
+from scipy.interpolate import interp2d, LinearNDInterpolator
 
+# Defaults
 b_def   = 1.5
 t_def   = 0.0
 k_def   = 's'
@@ -77,6 +80,27 @@ def search_Mach_table(Mach_table, b, t, phi_b, chi_b):
         return Mach_table[b][t][phi_b][chi_b]
     except:
         return np.nan
+
+def Mach_interpolate(Mach_table, bs, ts, ps, cs):
+    barray = np.array([k for k in Mach_table.keys()])
+    tarray = np.array([k for k in Mach_table[barray[0]].keys()])
+    parray = np.array([k for k in Mach_table[barray[0]][tarray[0]].keys()])
+    carray = np.array([k for k in Mach_table[barray[0]][tarray[0]][parray[0]].keys()])
+
+    gridpoints = itertools.product(barray, parray)
+    all_Mach = [search_Mach_table(Mach_table, b, ts[0], phi_b, cs[0]) for b, phi_b in gridpoints]
+    interpor = interp2d(barray, parray, all_Mach)
+
+    return interpor(bs, ps)
+
+    """gridpoints = itertools.product(barray, parray, carray)
+    all_Mach = [search_Mach_table(Mach_table, b, 0, phi_b, chi_b) for b, phi_b, chi_b in gridpoints]
+    print(all_Mach)
+    bgrid, pgrid, cgrid = np.meshgrid(barray, parray, carray)
+    print(np.shape(np.vstack((bgrid.ravel(), pgrid.ravel(), cgrid.ravel())).transpose()))
+    interpor = LinearNDInterpolator(np.vstack((bgrid.ravel(), pgrid.ravel(), cgrid.ravel())).transpose(), all_Mach)
+
+    return interpor(bs, ts, ps, cs)"""
 
 def main():
     """""""""
