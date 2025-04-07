@@ -5,7 +5,10 @@ import numpy as np
 import argparse
 import matplotlib.pyplot as plt
 from scipy.interpolate import interp1d
-from scipy.integrate import cumtrapz
+try:
+    from scipy.integrate import cumulative_trapezoid as cumtrapz
+except:
+    from scipy.integrate import cumtrapz
 
 b_def   = 1.5
 t_def   = 0.0
@@ -51,8 +54,7 @@ class Streamline(object):
 
         self._dataFile = dataFile
 
-        self._path = cumtrapz(np.sin(self.theta),self.y,initial=0)
-        self._flow_time = cumtrapz(np.sin(self.theta)/self.u,self.y,initial=0)
+        self._flow_time = cumtrapz(1/np.sin(self.theta)/self.u,self.y,initial=0)
 
     # Spatial coordinates
     @property
@@ -136,24 +138,24 @@ class Streamline(object):
         lookup = interp1d(self.phi, self.uy, bounds_error=False)
         return lookup(np.arctan2(y,x))
 
-    def lookup_ur(self, phi):
-        lookup = interp1d(self.phi, self.ur, bounds_error=False)
+    def lookup_ur(self, phi, fill_value=np.nan):
+        lookup = interp1d(self.phi, self.ur, bounds_error=False, fill_value=fill_value)
         return lookup(phi)
 
-    def lookup_utheta(self, phi):
-        lookup = interp1d(self.phi, self.utheta, bounds_error=False)
+    def lookup_utheta(self, phi, fill_value=np.nan):
+        lookup = interp1d(self.phi, self.utheta, bounds_error=False, fill_value=fill_value)
         return lookup(phi)
 
-    def lookup_u(self, phi):
-        lookup = interp1d(self.phi, self.u, bounds_error=False)
+    def lookup_u(self, phi, fill_value=np.nan):
+        lookup = interp1d(self.phi, self.u, bounds_error=False, fill_value=fill_value)
         return lookup(phi)
 
-    def lookup_rtilde(self, phi):
-        lookup = interp1d(self.phi, self.r, bounds_error=False)
+    def lookup_rtilde(self, phi, fill_value=np.nan):
+        lookup = interp1d(self.phi, self.r, bounds_error=False, fill_value=fill_value)
         return lookup(phi)
 
-    def lookup_rb(self, r, phi):
-        return r/self.lookup_rtilde(phi)
+    def lookup_rb(self, r, phi, fill_value=np.nan):
+        return r/self.lookup_rtilde(phi, fill_value=fill_value)
 
     # Datafile
     @property
