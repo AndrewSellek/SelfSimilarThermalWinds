@@ -16,8 +16,8 @@ chi_def = 90
 def read_Mach_table(tableFile, choose_k=k_def):
     # Reads a .dat file containing the maximum launch Mach numbers for a range of wind geometries and density/temperature profiles and stores in a dictionary.
     # By default returns only for spherical temperature profiles. For cylindrical call with choose_k='c'.
-    table_data = np.genfromtxt(tableFile, names=True, skip_header=0, comments='#', dtype=None)
-    Mach_data = table_data['M_b']
+    table_data = np.genfromtxt(tableFile, names=True, skip_header=0, comments='#', dtype=(float,'U2',float,float,float,'U8',float,float))
+    Mach_data = np.array([float(Mi.replace('*','')) for Mi in table_data['M_b']])
 
     # Extract density slopes b
     try:
@@ -77,7 +77,7 @@ def read_Mach_table(tableFile, choose_k=k_def):
 
 def search_Mach_table(Mach_table, b, t, phi_b, chi_b):
     try:
-        return Mach_table[b][t][phi_b][chi_b]
+        return Mach_table[b][t][phi_b][np.round(chi_b,3)]
     except:
         return np.nan
 
@@ -108,8 +108,9 @@ def main():
     """""""""
     parser = argparse.ArgumentParser()
     parser.add_argument("--file", "-f", type=str, default='launch_Mach.dat', help='File containing launch Mach numbers')
-    parser.add_argument("--b", "-b", type=float, nargs='+', default=[b_def], help='Density Profile Index'    )
+    parser.add_argument("--b", "-b", type=float, nargs='+', default=[b_def], help='Density Profile Index')
     parser.add_argument("--t", "-t", type=float, nargs='+', default=[t_def], help='Temperature Profile Index')
+    parser.add_argument("--k", "-k", type=str, default='s', choices=['s','c'], help='Temperature Key: s=spherical, c=cylindrical, {custom}')
     parser.add_argument("--phi_b", "-p", type=float, nargs='+', default=[phi_def],  help='Angle of the wind base (degrees) [Default: 0]' )
     parser.add_argument("--chi_b", "-c", type=float, nargs='+', default=[chi_def], help='Angle of the wind base (degrees) [Default: 90]')
     args = parser.parse_args()
@@ -118,7 +119,7 @@ def main():
     if not all(l==lengths[0] for l in lengths):
         raise AssertionError("The lists of parameters provided do not all have the same lengths.")
 
-    Mach_table = read_Mach_table(args.file)
+    Mach_table = read_Mach_table(args.file, choose_k=args.k)
 
     for b, t, phi_b, chi_b in zip(args.b, args.t, args.phi_b, args.chi_b):
         Mach_b = search_Mach_table(Mach_table, b, t, phi_b, chi_b/180)

@@ -132,6 +132,7 @@ def main():
 def search_up(base, cs, dy, yend, estMach, dM, adaptResolution=True):
     # Estimate Mach number to precision dM
     negativeWarn = False
+    noSolnWarn = False
     if estMach==0:
         if verbose:
             print("M=0 not valid: setting M=dM={}".format(dM))
@@ -139,6 +140,11 @@ def search_up(base, cs, dy, yend, estMach, dM, adaptResolution=True):
 
     # Increase Mach number until f<0 encountered
     while not negativeWarn:
+        if estMach>=1/np.sin(base.chi_b):
+            print("For M={}>={}, will break at start, terminate this sweep".format(estMach,1/np.sin(base.chi_b)))
+            estMach += dM
+            noSolnWarn = True
+            break
         if verbose:
             print("Test {:3.3}".format(estMach))
         if dy > 1e-2 * estMach**2 and adaptResolution:
@@ -152,7 +158,7 @@ def search_up(base, cs, dy, yend, estMach, dM, adaptResolution=True):
     # Return Mach number to highest valid value
     estMach -= 2*dM
 
-    return estMach
+    return estMach, noSolnWarn
 
 def search_down(base, cs, dy, yend, estMach, dM, adaptResolution=True):
     # Refine Mach number to precision dM
@@ -185,7 +191,10 @@ def solve_streamline(b, p, c, t, k, args, search, refine, launch_Mach=None):
         initMach = args.tryMach[0]
         maxMach = initMach
         for dM in [0.1, 0.01, 0.001]:
-            maxMach = search_up(base, cs, args.resolution, args.yend, maxMach, dM)
+            maxMach, noSolnWarn = search_up(base, cs, args.resolution, args.yend, maxMach, dM)
+        if noSolnWarn:
+            print("No space-filling solution found")
+            #maxMach = np.nan
         calcMach = [maxMach]
 
     elif refine:
@@ -209,7 +218,7 @@ def solve_streamline(b, p, c, t, k, args, search, refine, launch_Mach=None):
             print("Mb<=0 is not valid. Skipping...")
 
     if search or refine:
-        return "{:3.2f}\t{}\t{:3.2f}\t{:2.0f}\t{:3.3f}\t{:3.3f}\t{}\t{}\n".format(base.b, cs.key, cs.t, base.phi_deg, base.chi_b/np.pi, maxMach, args.resolution, args.yend)
+        return "{:3.2f}\t{}\t{:3.2f}\t{:2.0f}\t{:3.3f}\t{:3.3f}{}\t{}\t{}\n".format(base.b, cs.key, cs.t, base.phi_deg, base.chi_b/np.pi, maxMach, '*'*noSolnWarn, args.resolution, args.yend)
     else:
         return 1
 
@@ -217,13 +226,13 @@ def solve_streamline(b, p, c, t, k, args, search, refine, launch_Mach=None):
 Functions for updating u
 Equations 24-28 of Sellek et al. (2021)
 """""""""
-def f(x, y, dx, u, cs, Mach):
+def f(x, y, dx, u, cs, Mach, reportBreak=False):
     f1 = -Mach**2 * u * (Mach**2*u**2/cs.cs_sq(x, y)-1) * (x - y*dx) / ((1+dx**2)**(0.5) * (x*dx + y))
     f2 =  Mach**2 * u * (x*dx + y) / ((1+dx**2)**(0.5) * (x - y*dx))
     f = f1 + f2
     #try:
-    if (f <= 0):
-        #print("M = {} breaks when (x,y)=({},{})".format(Mach, x, y))
+    if reportBreak and f <= 0:
+        print("M = {} breaks when (x,y)=({},{})".format(Mach, x, y))
         return f, True
     #except ValueError:
     #    pass
@@ -341,7 +350,7 @@ def combinedODEs(y, xdxu, base, cs, Mach):
 
 def recollimation_event(y, xdxu, base, cs, Mach):
     x, dx, u = xdxu
-    du, negativeWarn = dudy(x, y, dx, u, base, cs, Mach)   # derivative of u with respect to y
+    _, negativeWarn = f(x, y, dx, u, cs, Mach, reportBreak=True)
     if negativeWarn:
         return 1.0
     else:
@@ -362,13 +371,13 @@ def Mach_iteration2(base, cs, dy, yend, Mach, save=False, save_dy=1e-2):
         
     """Loop through y"""
     solution = solve_ivp(combinedODEs, (y[0], y[-1]), (x,dx,u), t_eval=y, events=negativeWarn, args=(base, cs, Mach), atol=dy, rtol=1e-2)
-    yarr = solution.t
     if not solution.success:
         print("Solution failed for following base properties")
         print(base.b,cs.t,cs.key,base.phi_deg,base.chi_b/np.pi,Mach)
         print("with message")
         print(solution.message)
         return solution.status
+    yarr = solution.t
     xarr, dxarr, uarr = solution.y
 
     if save:
