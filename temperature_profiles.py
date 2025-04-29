@@ -69,4 +69,4 @@ class CylindricalTemperature(TemperatureStructure):
 ### Key dictionary
 temperatureKeys = {"s": SphericalTemperature, "c": CylindricalTemperature}
 
-print("Imported temeprature profiles")
+print("Imported temperature profiles")
