@@ -6,6 +6,7 @@ import argparse
 import os
 from scipy.interpolate import interp1d
 from scipy.special import erfc, erfcinv
+from scipy.integrate import solve_ivp
 import multiprocessing
 import time
 import itertools
@@ -143,9 +144,9 @@ def search_up(base, cs, dy, yend, estMach, dM, adaptResolution=True):
         if dy > 1e-2 * estMach**2 and adaptResolution:
             dyAdapt = 10**(-2 + np.floor(2*np.log10(estMach)))
             print("Higher resolution needed, increasing to dy={} for M={}".format(dyAdapt, estMach))
-            negativeWarn = Mach_iteration(base, cs, dyAdapt, yend, estMach)
+            negativeWarn = Mach_iteration2(base, cs, dyAdapt, yend, estMach)
         else:
-            negativeWarn = Mach_iteration(base, cs, dy, yend, estMach)
+            negativeWarn = Mach_iteration2(base, cs, dy, yend, estMach)
         estMach += dM
 
     # Return Mach number to highest valid value
@@ -164,9 +165,9 @@ def search_down(base, cs, dy, yend, estMach, dM, adaptResolution=True):
         if dy > 1e-2 * estMach**2 and adaptResolution:
             dyAdapt = 10**(-2 + np.floor(2*np.log10(estMach)))
             print("Higher resolution needed, increasing to dy={} for M={}".format(dyAdapt, estMach))
-            negativeWarn = Mach_iteration(base, cs, dyAdapt, yend, estMach)
+            negativeWarn = Mach_iteration2(base, cs, dyAdapt, yend, estMach)
         else:
-            negativeWarn = Mach_iteration(base, cs, dy, yend, estMach)
+            negativeWarn = Mach_iteration2(base, cs, dy, yend, estMach)
         estMach += dM
 
     # Return Mach number to highest valid value
@@ -203,7 +204,7 @@ def solve_streamline(b, p, c, t, k, args, search, refine, launch_Mach=None):
 	# Solve and save desired streamline(s)
         if M>0:
             print("Mb={}...".format(M))
-            Mach_iteration(base, cs, args.resolution, args.yend, M, save=True)
+            Mach_iteration2(base, cs, args.resolution, args.yend, M, save=True)
         else:
             print("Mb<=0 is not valid. Skipping...")
 
@@ -214,7 +215,7 @@ def solve_streamline(b, p, c, t, k, args, search, refine, launch_Mach=None):
 
 """""""""
 Functions for updating u
-Equations 24-28 of Sellek et al. (in prep.)
+Equations 24-28 of Sellek et al. (2021)
 """""""""
 def f(x, y, dx, u, cs, Mach):
     f1 = -Mach**2 * u * (Mach**2*u**2/cs.cs_sq(x, y)-1) * (x - y*dx) / ((1+dx**2)**(0.5) * (x*dx + y))
@@ -222,7 +223,7 @@ def f(x, y, dx, u, cs, Mach):
     f = f1 + f2
     #try:
     if (f <= 0):
-        print("M = {} breaks when (x,y)=({},{})".format(Mach, x, y))
+        #print("M = {} breaks when (x,y)=({},{})".format(Mach, x, y))
         return f, True
     #except ValueError:
     #    pass
@@ -321,6 +322,63 @@ def Mach_iteration(base, cs, dy, yend, Mach, save=False, save_dy=1e-2):
         np.savetxt(datafile, output_data.T, delimiter='\t', header='Generated for b={}, t={}({}), phi_b={}, chi_b={}pi, M_b={}\nx\ty\tdx\tu'.format(base.b,cs.t,cs.key,base.phi_deg,base.chi_b/np.pi,Mach))
 
     return negativeWarn
+
+"""""""""
+Faster scipy solution for a given Mach number
+"""""""""
+def combinedODEs(y, xdxu, base, cs, Mach):
+    x, dx, u = xdxu
+    if u==1 and base.chi_b == np.pi/2:
+        """If launched normal, evaluate using known limits at the base to avoid large numbers"""
+        dA  = dx / np.cos(base.phi_b)
+        du  = dA / (Mach**2-1)
+        d2x = (base.b+cs.t) / (Mach**2 * np.cos(base.phi_b)**3)   
+    else:
+        du, negativeWarn = dudy(x, y, dx, u, base, cs, Mach)   # derivative of u with respect to y
+        dA  = dAdy(u, du, x, y, dx, base, cs, Mach)            # derivative of A with respect to y
+        d2x = d2xdy2(x, y, dx, dA, base)                       # derivative of dx with respect to y
+    return np.array([dx,d2x,du])
+
+def recollimation_event(y, xdxu, base, cs, Mach):
+    x, dx, u = xdxu
+    du, negativeWarn = dudy(x, y, dx, u, base, cs, Mach)   # derivative of u with respect to y
+    if negativeWarn:
+        return 1.0
+    else:
+        return -1.0
+
+def Mach_iteration2(base, cs, dy, yend, Mach, save=False, save_dy=1e-2):
+    negativeWarn=recollimation_event
+    negativeWarn.terminal=True
+
+    """Use y (cylindrical z) as independent variable"""
+    y0 = np.sin(base.phi_b)
+    y  = np.arange(y0, yend+save_dy, save_dy)
+
+    """Use x (cylindrical radius), dx and u as dependent variables and set to initial values"""
+    x   = np.cos(base.phi_b)
+    dx  = np.cos(base.theta_b)/np.sin(base.theta_b)
+    u   = 1
+        
+    """Loop through y"""
+    solution = solve_ivp(combinedODEs, (y[0], y[-1]), (x,dx,u), t_eval=y, events=negativeWarn, args=(base, cs, Mach), atol=dy, rtol=1e-2)
+    yarr = solution.t
+    if not solution.success:
+        print("Solution failed for following base properties")
+        print(base.b,cs.t,cs.key,base.phi_deg,base.chi_b/np.pi,Mach)
+        print("with message")
+        print(solution.message)
+        return solution.status
+    xarr, dxarr, uarr = solution.y
+
+    if save:
+        """Save streamline"""
+        output_data = np.column_stack((xarr,yarr,dxarr,uarr))
+        datafile = 'streamline_data_b{:03.0f}_t{}{:03.0f}_p{:02.0f}_c{:03.0f}_M{:04.0f}.dat'.format(100*base.b,cs.key,100*cs.t,base.phi_deg,100*base.chi_b/np.pi,Mach*1000)
+        print("Saving", datafile)
+        np.savetxt(datafile, output_data, delimiter='\t', header='Generated for b={}, t={}({}), phi_b={}, chi_b={}pi, M_b={}\nx\ty\tdx\tu'.format(base.b,cs.t,cs.key,base.phi_deg,base.chi_b/np.pi,Mach))
+
+    return solution.status
 
 if __name__ == "__main__":
     main()
