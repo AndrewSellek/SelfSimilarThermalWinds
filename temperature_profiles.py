@@ -72,13 +72,13 @@ class ParabolicTemperature(TemperatureStructure):
 
     def C(self, R, z):
         r = np.sqrt(R**2 + z**2)
-        return np.power(r, self.t+1/2-1/2*np.log(r))
+        return np.exp((self.t+1/2)*np.log(r)-1/2*np.log(r)**2/np.log(10))
 
     def dlnCdphi(self, R, z, dR=None):
         assert dR is not None
         r = np.sqrt(R**2 + z**2)
         tanchi = (R - z*dR) / (R*dR + z)
-        return (self.t+1/2-np.log(r))/tanchi
+        return (self.t+1/2-np.log(r)/np.log(10))/tanchi
 
 ### Key dictionary
 temperatureKeys = {"s": SphericalTemperature, "c": CylindricalTemperature, "p": ParabolicTemperature}
