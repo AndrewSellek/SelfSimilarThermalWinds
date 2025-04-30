@@ -240,7 +240,7 @@ def f(x, y, dx, u, cs, Mach, reportBreak=False):
 def g(x, y, dx, u, base, cs, Mach):
     g1 = (base.b + cs.t) * (1 + dx**2)**(0.5) / (x - y*dx) * cs.cs_sq(x, y)
     g21 = - Mach**2 * u**2 * dx * (x - y*dx) / ((1+dx**2)**(0.5) * x * (x*dx+y))
-    g22 = - Mach**2 * u**2 * (x - y*dx) / (1+dx**2)**(0.5) / (x**2+y**2) * ( cs.t - cs.dlnCdphi(x,y) * (x - y*dx) / (x*dx + y) )
+    g22 = - Mach**2 * u**2 * (x - y*dx) / (1+dx**2)**(0.5) / (x**2+y**2) * ( cs.t - cs.dlnCdphi(x,y,dx) * (x - y*dx) / (x*dx + y) )
     return g1 + g21 + g22
 def dudy(x, y, dx, u, base, cs, Mach):
     G = g(x, y, dx, u, base, cs, Mach)
@@ -257,7 +257,7 @@ def dAdy(u, du, x, y, dx, base, cs, Mach):
     # Equation 23
     Area = A(x, y, dx, base)
     invrho = Area*u
-    return invrho * ( (Mach**2/cs.cs_sq(x, y) - 1/u**2) * du + 1/u * ( -cs.t + cs.dlnCdphi(x,y) * (x - y*dx) / (x*dx + y) ) * (x*dx+y) / (x**2+y**2) )
+    return invrho * ( (Mach**2/cs.cs_sq(x, y) - 1/u**2) * du + 1/u * ( -cs.t + cs.dlnCdphi(x,y,dx) * (x - y*dx) / (x*dx + y) ) * (x*dx+y) / (x**2+y**2) )
 def d2xdy2(x, y, dx, dA, base):
     # Equation 18
     t1 = (1+dx**2) * (x - y*dx) * dx

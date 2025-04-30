@@ -32,7 +32,7 @@ class TemperatureStructure(object):
         # Must be specified in instances
         return NotImplementedError
 
-    def dlnCdphi(self, R, z):
+    def dlnCdphi(self, R, z, dR=None):
         # Must be specified in instances
         return NotImplementedError
 
@@ -47,26 +47,40 @@ class SphericalTemperature(TemperatureStructure):
     def key(self):
         return 's'
 
-    def C(self, x, y):
-        # Must be specified in instances
-        return np.ones_like(x)
+    def C(self, R, z):
+        return np.ones_like(R)
 
-    def dlnCdphi(self, x, y):
-        # Must be specified in instances
-        return np.zeros_like(x)
+    def dlnCdphi(self, R, z, dR=None):
+        return np.zeros_like(R)
+
 class CylindricalTemperature(TemperatureStructure):
     @property
     def key(self):
         return 'c'
 
-    def C(self, x, y):
-        r = np.sqrt(x**2 + y**2)
-        return (x/(r*np.cos(self._phi_b)))**(-self.t)
+    def C(self, R, z):
+        r = np.sqrt(R**2 + z**2)
+        return (R/(r*np.cos(self._phi_b)))**(-self.t)
 
-    def dlnCdphi(self, x, y):
-        return self.t * y/x
+    def dlnCdphi(self, R, z, dR=None):
+        return self.t * z/R
+
+class ParabolicTemperature(TemperatureStructure):
+    @property
+    def key(self):
+        return 'p'
+
+    def C(self, R, z):
+        r = np.sqrt(R**2 + z**2)
+        return np.power(r, self.t+1/2-1/2*np.log(r))
+
+    def dlnCdphi(self, R, z, dR=None):
+        assert dR is not None
+        r = np.sqrt(R**2 + z**2)
+        tanchi = (R - z*dR) / (R*dR + z)
+        return (self.t+1/2-np.log(r))/tanchi
 
 ### Key dictionary
-temperatureKeys = {"s": SphericalTemperature, "c": CylindricalTemperature}
+temperatureKeys = {"s": SphericalTemperature, "c": CylindricalTemperature, "p": ParabolicTemperature}
 
 print("Imported temperature profiles")
