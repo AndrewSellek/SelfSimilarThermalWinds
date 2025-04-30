@@ -370,7 +370,7 @@ def Mach_iteration2(base, cs, dy, yend, Mach, save=False, save_dy=1e-2):
     u   = 1
         
     """Loop through y"""
-    solution = solve_ivp(combinedODEs, (y[0], y[-1]), (x,dx,u), t_eval=y, events=negativeWarn, args=(base, cs, Mach), atol=dy, rtol=1e-2)
+    solution = solve_ivp(combinedODEs, (y[0], y[-1]), (x,dx,u), t_eval=y, events=negativeWarn, args=(base, cs, Mach), atol=dy, rtol=1e-3, method='DOP853')
     if not solution.success:
         print("Solution failed for following base properties")
         print(base.b,cs.t,cs.key,base.phi_deg,base.chi_b/np.pi,Mach)
