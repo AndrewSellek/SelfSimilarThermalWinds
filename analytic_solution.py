@@ -71,7 +71,7 @@ def main():
 
     # Initial value and outer radius of solution
     parser.add_argument("--yend", "-y", type=float, default=100, help='Largest y to integrate out [100]')
-    parser.add_argument("--resolution", "-n", type=float, default=1e-5, help='dy to use for integration [1e-5]')
+    parser.add_argument("--resolution", "-n", type=float, default=1e-6, help='dy to use for integration [1e-6]')
     parser.add_argument("--tryMach", "-M", type=float, nargs='+', default=[0.1], help='Mach number(s) to try')
 
     # Search and refine modes
@@ -129,7 +129,7 @@ def main():
     pool.close()
     pool.join()
 
-def search_up(base, cs, dy, yend, estMach, dM, adaptResolution=True):
+def search_up(base, cs, dy, yend, estMach, dM, adaptResolution=False):
     # Estimate Mach number to precision dM
     negativeWarn = False
     noSolnWarn = False
@@ -160,7 +160,7 @@ def search_up(base, cs, dy, yend, estMach, dM, adaptResolution=True):
 
     return estMach, noSolnWarn
 
-def search_down(base, cs, dy, yend, estMach, dM, adaptResolution=True):
+def search_down(base, cs, dy, yend, estMach, dM, adaptResolution=False):
     # Refine Mach number to precision dM
     negativeWarn = True
 
@@ -370,7 +370,7 @@ def Mach_iteration2(base, cs, dy, yend, Mach, save=False, save_dy=1e-2):
     u   = 1
         
     """Loop through y"""
-    solution = solve_ivp(combinedODEs, (y[0], y[-1]), (x,dx,u), t_eval=y, events=negativeWarn, args=(base, cs, Mach), atol=dy, rtol=1e-3, method='DOP853')
+    solution = solve_ivp(combinedODEs, (y[0], y[-1]), (x,dx,u), t_eval=y, events=negativeWarn, args=(base, cs, Mach), atol=dy, rtol=dy, method='DOP853')
     if not solution.success:
         print("Solution failed for following base properties")
         print(base.b,cs.t,cs.key,base.phi_deg,base.chi_b/np.pi,Mach)
